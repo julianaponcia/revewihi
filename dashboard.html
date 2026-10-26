@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LiBROry — Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div id="toast-box"></div>
+    <div class="app-window">
+        <aside class="outer-sidebar">
+            <div class="orange-capsule">
+                <div>
+                    <div class="brand-header"><span>📚</span><span>LiBROry</span></div>
+                    <nav class="nav-menu">
+                        <a href="index.html" class="nav-item"><i class="fa-solid fa-store"></i>Home</a>
+                        <a href="return.html" class="nav-item"><i class="fa-solid fa-book"></i>Return a book</a>
+                        <a href="process.html" class="nav-item"><i class="fa-solid fa-exchange-alt"></i>Process returns</a>
+                        <a href="returned.html" class="nav-item"><i class="fa-solid fa-file-import"></i>Returned books</a>
+                        <a href="review.html" class="nav-item"><i class="fa-solid fa-face-grin-stars"></i>Review a book</a>
+                        <a href="borrow.html" class="nav-item"><i class="fa-solid fa-book-tanakh"></i>Borrow a book</a>
+                        <a href="dashboard.html" class="nav-item active"><i class="fa-solid fa-chart-simple"></i>Dashboard</a>
+                    </nav>
+                </div>
+                <button class="logout-btn" onclick="logoutSystem()"><i class="fa-solid fa-door-open"></i>Log out</button>
+            </div>
+        </aside>
+        <main class="main-viewport">
+            <div class="top-bar"><h1>System Dashboard & Deadlines</h1></div>
+            <p class="tagline-text">Monitor active borrows, 7-day deadlines, and full immutable transaction logs.</p>
+            
+            <h2 style="font-size:18px; margin-bottom: 12px;">Active Borrowed Books & Remaining Deadlines</h2>
+            <table class="data-table" style="margin-bottom:30px;">
+                <thead><tr><th>Book Title</th><th>Borrower</th><th>Borrow Date</th><th>Deadline Status</th></tr></thead>
+                <tbody id="active-borrows-tbody"></tbody>
+            </table>
+
+            <h2 style="font-size:18px; margin-bottom: 12px;">Complete Transaction History Log</h2>
+            <table class="data-table">
+                <thead><tr><th>#</th><th>Book Title</th><th>User</th><th>Action</th><th>Timestamp</th></tr></thead>
+                <tbody id="history-tbody"></tbody>
+            </table>
+        </main>
+    </div>
+    <script src="javascript.js"></script>
+    <script>
+        const borrowTbody = document.getElementById('active-borrows-tbody');
+        const borrowedBooks = books.filter(b => b.status === 'Borrowed');
+        if (borrowedBooks.length === 0) {
+            borrowTbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">No active borrowed books.</td></tr>`;
+        } else {
+            borrowedBooks.forEach(b => {
+                borrowTbody.innerHTML += `<tr><td><strong>${b.title}</strong></td><td>${b.borrower}</td><td>${new Date(b.borrowDate).toLocaleDateString()}</td><td><span style="color:var(--orange-bright); font-weight:bold;">${getRemainingDeadline(b.dueDate)}</span></td></tr>`;
+            });
+        }
+
+        const historyTbody = document.getElementById('history-tbody');
+        if (history.length === 0) {
+            historyTbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No transactions recorded.</td></tr>`;
+        } else {
+            history.slice().reverse().forEach((h, idx) => {
+                historyTbody.innerHTML += `<tr><td>${history.length - idx}</td><td>${h.title}</td><td>${h.user}</td><td>${h.action}</td><td>${h.time}</td></tr>`;
+            });
+        }
+    </script>
+</body>
+</html>

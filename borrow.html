@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LiBROry — Borrow</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div id="toast-box"></div>
+    <div class="app-window">
+        <aside class="outer-sidebar">
+            <div class="orange-capsule">
+                <div>
+                    <div class="brand-header"><span>📚</span><span>LiBROry</span></div>
+                    <nav class="nav-menu">
+                        <a href="index.html" class="nav-item"><i class="fa-solid fa-store"></i>Home</a>
+                        <a href="return.html" class="nav-item"><i class="fa-solid fa-book"></i>Return a book</a>
+                        <a href="process.html" class="nav-item"><i class="fa-solid fa-exchange-alt"></i>Process returns</a>
+                        <a href="returned.html" class="nav-item"><i class="fa-solid fa-file-import"></i>Returned books</a>
+                        <a href="review.html" class="nav-item"><i class="fa-solid fa-face-grin-stars"></i>Review a book</a>
+                        <a href="borrow.html" class="nav-item active"><i class="fa-solid fa-book-tanakh"></i>Borrow a book</a>
+                        <a href="dashboard.html" class="nav-item"><i class="fa-solid fa-chart-simple"></i>Dashboard</a>
+                    </nav>
+                </div>
+                <button class="logout-btn" onclick="logoutSystem()"><i class="fa-solid fa-door-open"></i>Log out</button>
+            </div>
+        </aside>
+        <main class="main-viewport">
+            <div class="top-bar"><h1>Borrow a Book</h1></div>
+            <p class="tagline-text">Select an available book or enter its code (e.g., 1234). Note: 7-day return deadline applies.</p>
+            <div class="form-box">
+                <form onsubmit="handleBorrowSubmit(event)">
+                    <div class="form-group">
+                        <label>Select Available Book:</label>
+                        <select id="borrow-select" class="form-input" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Or Enter Book Code:</label>
+                        <input type="text" id="borrow-code-input" class="form-input" placeholder="e.g. 1234">
+                    </div>
+                    <div class="form-group">
+                        <label>Borrower Name:</label>
+                        <input type="text" id="borrower-name" class="form-input" required>
+                    </div>
+                    <button type="submit" class="action-btn">Confirm Borrow (7-Day Limit)</button>
+                </form>
+            </div>
+        </main>
+    </div>
+    <script src="javascript.js"></script>
+    <script>
+        const sel = document.getElementById('borrow-select');
+        books.filter(b => b.status === 'Available').forEach(b => {
+            sel.innerHTML += `<option value="${b.id}">[Code: ${b.code}] ${b.title}</option>`;
+        });
+
+        function handleBorrowSubmit(e) {
+            e.preventDefault();
+            const codeInput = document.getElementById('borrow-code-input').value.trim();
+            const selectedId = sel.value;
+            const user = document.getElementById('borrower-name').value;
+
+            let book = codeInput ? books.find(b => b.code === codeInput) : books.find(b => b.id == selectedId);
+
+            if (!book || book.status !== 'Available') {
+                toast('Invalid book selection or book is currently unavailable.');
+                return;
+            }
+
+            const now = new Date();
+            const due = new Date();
+            due.setDate(now.getDate() + 7); // 7 day deadline
+
+            book.status = 'Borrowed';
+            book.borrowDate = now.toISOString();
+            book.dueDate = due.toISOString();
+            book.borrower = user;
+
+            history.push({ title: book.title, user: user, action: 'Borrowed (7-day limit)', time: now.toLocaleString() });
+            saveData();
+            toast(`Successfully borrowed "${book.title}"! Due in 7 days.`);
+            setTimeout(() => location.reload(), 1500);
+        }
+    </script>
+</body>
+</html>

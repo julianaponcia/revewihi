@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LiBROry — Return</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div id="toast-box"></div>
+    <div class="app-window">
+        <aside class="outer-sidebar">
+            <div class="orange-capsule">
+                <div>
+                    <div class="brand-header"><span>📚</span><span>LiBROry</span></div>
+                    <div id="current-user-display" style="background:var(--white); color:var(--navy-dark); padding:8px 12px; border-radius:20px; font-weight:800; font-size:12px; text-align:center; margin-bottom:15px; box-shadow:0 2px 5px rgba(0,0,0,0.1);"></div>
+                    <nav class="nav-menu">
+                        <a href="index.html" class="nav-item"><i class="fa-solid fa-store"></i>Home</a>
+                        <a href="return.html" class="nav-item active"><i class="fa-solid fa-book"></i>Return a book</a>
+                        <a href="process.html" class="nav-item"><i class="fa-solid fa-exchange-alt"></i>Process returns</a>
+                        <a href="returned.html" class="nav-item"><i class="fa-solid fa-file-import"></i>Returned books</a>
+                        <a href="review.html" class="nav-item"><i class="fa-solid fa-face-grin-stars"></i>Review a book</a>
+                        <a href="borrow.html" class="nav-item"><i class="fa-solid fa-book-tanakh"></i>Borrow a book</a>
+                        <a href="dashboard.html" class="nav-item"><i class="fa-solid fa-chart-simple"></i>Dashboard</a>
+                    </nav>
+                </div>
+                <button class="logout-btn" onclick="logoutSystem()"><i class="fa-solid fa-door-open"></i>Log out</button>
+            </div>
+        </aside>
+        <main class="main-viewport">
+            <div class="top-bar"><h1>Return a Book</h1></div>
+            <p class="tagline-text">Finished reading your book? Return it here.</p>
+            <div class="form-box" style="background:var(--card-gray); padding:30px; border-radius:20px; max-width:500px; margin-top:20px;">
+                <form onsubmit="handleReturnSubmit(event)">
+                    <div class="form-group" style="margin-bottom:20px;">
+                        <label style="display:block; font-weight:800; color:var(--navy-dark); margin-bottom:8px;">Select Borrowed Book:</label>
+                        <select id="return-select" class="form-input" style="width:100%; padding:12px; border-radius:12px; border:1px solid #cbd5e1;" required></select>
+                    </div>
+                    <div class="form-group" style="margin-bottom:20px;">
+                        <label style="display:block; font-weight:800; color:var(--navy-dark); margin-bottom:8px;">Returning User Name:</label>
+                        <input type="text" id="returner-name" class="form-input" style="width:100%; padding:12px; border-radius:12px; border:1px solid #cbd5e1;" required>
+                    </div>
+                    <button type="submit" class="action-btn" style="background:var(--orange-bright); color:white; border:none; padding:12px 24px; border-radius:25px; font-weight:800; cursor:pointer;">Return book</button>
+                </form>
+            </div>
+        </main>
+    </div>
+    <script src="javascript.js"></script>
+    <script>
+        const sel = document.getElementById('return-select');
+        books.filter(b => b.status === 'Borrowed').forEach(b => {
+            sel.innerHTML += `<option value="${b.id}">[Code: ${b.code}] ${b.title} (Due: ${new Date(b.dueDate).toLocaleDateString()})</option>`;
+        });
+
+        function handleReturnSubmit(e) {
+            e.preventDefault();
+            const id = parseInt(sel.value);
+            const user = document.getElementById('returner-name').value;
+            const book = books.find(b => b.id === id);
+
+            if (book) {
+                book.status = 'Pending Return';
+                stack.push({ 
+                    id: book.id, 
+                    code: book.code,
+                    title: book.title, 
+                    returnedBy: user, 
+                    returnDate: new Date().toISOString() 
+                });
+                history.push({ 
+                    title: book.title, 
+                    user: user, 
+                    action: 'Returned', 
+                    time: new Date().toLocaleString() 
+                });
+                saveData();
+                toast(`"${book.title}" Returned`);
+                setTimeout(() => window.location.href = 'process.html', 1500);
+            }
+        }
+    </script>
+</body>
+</html>

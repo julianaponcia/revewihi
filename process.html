@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LiBROry — Process Returns</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div id="toast-box"></div>
+    <div class="app-window">
+        <!-- Sidebar Navigation -->
+        <aside class="outer-sidebar">
+            <div class="orange-capsule">
+                <div>
+                    <div class="brand-header">
+                        <span>📚</span>
+                        <span>LiBROry</span>
+                    </div>
+                    <div id="current-user-display" style="background:var(--white); color:var(--navy-dark); padding:8px 12px; border-radius:20px; font-weight:800; font-size:12px; text-align:center; margin-bottom:15px; box-shadow:0 2px 5px rgba(0,0,0,0.1);"></div>
+                    <nav class="nav-menu">
+                        <a href="index.html" class="nav-item"><i class="fa-solid fa-store"></i>Home</a>
+                        <a href="return.html" class="nav-item"><i class="fa-solid fa-book"></i>Return a book</a>
+                        <a href="process.html" class="nav-item active"><i class="fa-solid fa-exchange-alt"></i>Process returns</a>
+                        <a href="returned.html" class="nav-item"><i class="fa-solid fa-file-import"></i>Returned books</a>
+                        <a href="review.html" class="nav-item"><i class="fa-solid fa-face-grin-stars"></i>Review a book</a>
+                        <a href="borrow.html" class="nav-item"><i class="fa-solid fa-book-tanakh"></i>Borrow a book</a>
+                        <a href="dashboard.html" class="nav-item"><i class="fa-solid fa-chart-simple"></i>Dashboard</a>
+                    </nav>
+                </div>
+                <button class="logout-btn" onclick="logoutSystem()"><i class="fa-solid fa-door-open"></i>Log out</button>
+            </div>
+        </aside>
+        <!-- Main Viewport Content -->
+        <main class="main-viewport">
+            <div class="top-bar">
+                <h1>Process Returns</h1>
+            </div>
+            <p class="tagline-text">Review recently returned books and process them back into stock.</p>
+            
+            <!-- Latest Return Alert Box -->
+            <div id="peek-container" style="background:#e2e8f0; margin:20px 0; font-weight:700; padding:18px 24px; border-radius:16px; color:var(--navy-dark); font-size:14px; box-shadow:0 2px 6px rgba(0,0,0,0.03);">
+                No pending returns to process.
+            </div>
+
+            <!-- Primary Action Button -->
+            <button class="action-btn" onclick="popReturn()" style="background:var(--orange-bright); color:white; border:none; padding:12px 24px; border-radius:25px; font-weight:800; cursor:pointer; font-size:14px; margin-bottom:25px; display:flex; align-items:center; gap:8px;">
+                <i class="fa-solid fa-gear"></i> Process Latest Return
+            </button>
+
+            <!-- Pending Queue Table -->
+            <h3 style="font-size:18px; font-weight:800; color:var(--navy-dark); margin-bottom:12px;">Pending Return Queue</h3>
+            <table style="width:100%; border-collapse:separate; border-spacing:0; border-radius:16px; overflow:hidden; box-shadow:0 4px 10px rgba(0,0,0,0.04);">
+                <thead>
+                    <tr style="background:var(--navy-dark); color:white; text-align:left; font-size:13px;">
+                        <th style="padding:14px 20px;">Queue No.</th>
+                        <th style="padding:14px 20px;">Book Title</th>
+                        <th style="padding:14px 20px;">Returned By</th>
+                        <th style="padding:14px 20px;">Time</th>
+                    </tr>
+                </thead>
+                <tbody id="stack-table-body">
+                    <tr>
+                        <td colspan="4" style="text-align:center; padding:18px; background:#e2e8f0; color:var(--text-muted); font-weight:600; font-size:13px;">
+                            No books waiting in queue
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </main>
+    </div>
+
+    <script src="javascript.js"></script>
+    <script>
+        function renderProcessPage() {
+            const peekContainer = document.getElementById('peek-container');
+            const tableBody = document.getElementById('stack-table-body');
+
+            if (stack.length === 0) {
+                peekContainer.innerHTML = 'No pending returns to process.';
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="4" style="text-align:center; padding:18px; background:#e2e8f0; color:var(--text-muted); font-weight:600; font-size:13px;">
+                            No books waiting in queue
+                        </td>
+                    </tr>`;
+                return;
+            }
+
+            const topItem = stack[stack.length - 1];
+            peekContainer.innerHTML = `<strong>Next in line:</strong> "${topItem.title}" returned by <strong>${topItem.returnedBy || 'User'}</strong>`;
+
+            tableBody.innerHTML = stack.slice().reverse().map((item, idx) => `
+                <tr style="background:#f8fafc; border-bottom:1px solid #e2e8f0; font-size:13px; color:var(--navy-dark);">
+                    <td style="padding:14px 20px; font-weight:700;">#${stack.length - idx}</td>
+                    <td style="padding:14px 20px; font-weight:600;">${item.title}</td>
+                    <td style="padding:14px 20px;">${item.returnedBy || 'User'}</td>
+                    <td style="padding:14px 20px; color:var(--text-muted);">${item.returnDate ? new Date(item.returnDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Recently'}</td>
+                </tr>
+            `).join('');
+        }
+
+        function popReturn() {
+            if (stack.length === 0) {
+                toast('No returns waiting to be processed!');
+                return;
+            }
+
+            const processed = stack.pop();
+            
+            const book = books.find(b => b.id === processed.id || b.code === processed.code);
+            if (book) {
+                book.status = 'Available';
+                book.borrower = null;
+                book.borrowDate = null;
+                book.dueDate = null;
+            }
+
+            history.push({
+                ...processed,
+                processedDate: new Date().toISOString()
+            });
+
+            saveData();
+            toast(`Successfully processed return for "${processed.title}"!`);
+            renderProcessPage();
+        }
+
+        document.addEventListener("DOMContentLoaded", renderProcessPage);
+    </script>
+</body>
+</html>

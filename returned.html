@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LiBROry — Returned Books</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div id="toast-box"></div>
+    <div class="app-window">
+        <aside class="outer-sidebar">
+            <div class="orange-capsule">
+                <div>
+                    <div class="brand-header"><span>📚</span><span>LiBROry</span></div>
+                    <nav class="nav-menu">
+                        <a href="index.html" class="nav-item"><i class="fa-solid fa-store"></i>Home</a>
+                        <a href="return.html" class="nav-item"><i class="fa-solid fa-book"></i>Return a book</a>
+                        <a href="process.html" class="nav-item"><i class="fa-solid fa-exchange-alt"></i>Process returns</a>
+                        <a href="returned.html" class="nav-item"><i class="fa-solid fa-file-import"></i>Returned books</a>
+                        <a href="review.html" class="nav-item"><i class="fa-solid fa-face-grin-stars"></i>Review a book</a>
+                        <a href="borrow.html" class="nav-item"><i class="fa-solid fa-book-tanakh"></i>Borrow a book</a>
+                        <a href="dashboard.html" class="nav-item"><i class="fa-solid fa-chart-simple"></i>Dashboard</a>
+                    </nav>
+                </div>
+                <button class="logout-btn" onclick="logoutSystem()"><i class="fa-solid fa-door-open"></i>Log out</button>            
+        </div>
+        </aside>
+        <main class="main-viewport">
+            <div class="top-bar"><h1>Returned & Available Books Catalog</h1></div>
+            <p class="tagline-text">Comprehensive catalog showing book codes and current statuses.</p>
+            <table class="data-table">
+                <thead><tr><th>Code</th><th>Title</th><th>Author</th><th>Category</th><th>Status</th></tr></thead>
+                <tbody id="catalog-tbody"></tbody>
+            </table>
+        </main>
+    </div>
+<script src="javascript.js"></script>
+    <script>
+        const tbody = document.getElementById('catalog-tbody');
+        const filterCat = localStorage.getItem('lib_filter') || 'All';
+        
+        function renderCatalog(category) {
+            tbody.innerHTML = '';
+            const filtered = category === 'All' ? books : books.filter(b => b.category === category);
+            
+            filtered.forEach(b => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><code>${b.code}</code></td>
+                        <td><strong>${b.title}</strong></td>
+                        <td>${b.author}</td>
+                        <td>${b.category}</td>
+                        <td><span style="font-weight:bold; color:${b.status === 'Available' ? 'green' : 'red'};">${b.status}</span></td>
+                    </tr>
+                `;
+            });
+        }
+        
+        renderCatalog(filterCat);
+        localStorage.removeItem('lib_filter'); // clear after loading
+    </script>
+</body>
+</html>
